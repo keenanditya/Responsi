@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsi SIG Dasar</title>
+    <style>
+        /* --- Setup Dasar --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f0f0f; /* Hitam pekat */
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: #a0a0a0;
+            margin-bottom: 30px;
+        }
+
+        /* --- Input Field Styles --- */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        input[type="number"] {
+            background-color: #1a1a1a;
+            border: 2px solid #333;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.5rem;
+            border-radius: 16px;
+            width: 150px;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            -moz-appearance: textfield; /* Ilangin spinner di Firefox */
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* --- Tombol Utama --- */
+        .btn-main {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .btn-main:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.6);
+        }
+
+        .btn-main:active {
+            transform: translateY(1px);
+        }
+
+        /* --- Popup Overlay (Modal) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            width: 320px;
+            border: 1px solid #333;
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .modal-subtext {
+            color: #007bff;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        /* --- Countdown Circle Animation --- */
+        .timer-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid #333;
+            border-top-color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+
+        .timer-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            z-index: 2;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Responsi SIG Dasar</h1>
+        <p class="subtitle">Masukkan nomor urut presensi kamu</p>
+        
+        <div class="input-group">
+            <input type="number" id="participant-number" placeholder="#" min="1" max="42">
+        </div>
+
+        <button class="btn-main" onclick="validateAndStart()">AMBIL SOAL</button>
+    </div>
+
+    <div class="modal-overlay" id="popup">
+        <div class="modal-content">
+            <div class="modal-title" id="popup-title">Halo...</div>
+            <div class="modal-subtext">Membuka soal ujianmu!</div>
+            
+            <div class="timer-wrapper">
+                <div class="timer-circle"></div>
+                <div class="timer-number" id="countdown">5</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Lab Geografi &copy; 2025
+    </footer>
+
+    <script>
+        // --- DATABASE BARU (No, Nama, Link) ---
+        const examDatabase = {
+            1: { name: "Faizah", link: "https://drive.google.com/drive/folders/1ld0IX8U8UrPQ16GzYi8DNDuD98zuJtpK?usp=drive_link" },
+            2: { name: "Naya", link: "https://drive.google.com/drive/folders/1YfN3PEJ1Z_X0z7yPgwiQh6uMaxjcsB9v?usp=drive_link" },
+            3: { name: "Solida", link: "https://drive.google.com/drive/folders/1jasVCW9oSBm9nSdtZPeTtyYrSyXHkJ8Z?usp=drive_link" },
+            4: { name: "Ayu", link: "https://drive.google.com/drive/folders/1KRYoPIOIiCa5UrZY3Gk4Fzk7oDdair6S?usp=drive_link" },
+            5: { name: "Asyfa", link: "https://drive.google.com/drive/folders/1USjwU1ZLHO0_flHPkpF7nU2lGGz5SA_c?usp=drive_link" },
+            6: { name: "Ghofar", link: "https://drive.google.com/drive/folders/1cVclJgpoERRLF4CYOVeQjDQE6xaanx6f?usp=drive_link" },
+            7: { name: "Dewi", link: "https://drive.google.com/drive/folders/1jYSi_sA4Au3rwok-WKcJDA9ZKjvCRxx8?usp=drive_link" },
+            8: { name: "Hufa", link: "https://drive.google.com/drive/folders/1vMpC77ikn6VHyV-kf3QMpgF8R5H2-VQU?usp=drive_link" },
+            9: { name: "Falah", link: "https://drive.google.com/drive/folders/1d34iNx9i2dPHRqBMsEhaMZSB5gilfVpt?usp=drive_link" },
+            10: { name: "Dwita", link: "https://drive.google.com/drive/folders/1e-z2suOlyVlJfX1VZzyuXMqXrAVscxIW?usp=drive_link" },
+            11: { name: "Putri", link: "https://drive.google.com/drive/folders/1P1RjkeTi9KyAS07xamyj74c6HT--GuyD?usp=drive_link" },
+            12: { name: "Akmal", link: "https://drive.google.com/drive/folders/1ec7sV4w_3ic8WfDvUuA5EK_Khot_KPPp?usp=drive_link" },
+            13: { name: "Farah", link: "https://drive.google.com/drive/folders/1uZnTa5dmt8YnmwIRFPZk7n64IbtKULf2?usp=drive_link" },
+            14: { name: "Vika", link: "https://drive.google.com/drive/folders/1CSj5oRI000KjgJBjDYpj-oCAU71-zudD?usp=drive_link" },
+            15: { name: "Tia", link: "https://drive.google.com/drive/folders/1LGxDU6k-4JBj_hPtmwc_Wz-oR7kah4tO?usp=drive_link" },
+            16: { name: "Alvin", link: "https://drive.google.com/drive/folders/1ld0IX8U8UrPQ16GzYi8DNDuD98zuJtpK?usp=drive_link" },
+            17: { name: "Lapang", link: "https://drive.google.com/drive/folders/1YfN3PEJ1Z_X0z7yPgwiQh6uMaxjcsB9v?usp=drive_link" },
+            18: { name: "Jesika", link: "https://drive.google.com/drive/folders/1jasVCW9oSBm9nSdtZPeTtyYrSyXHkJ8Z?usp=drive_link" },
+            19: { name: "Meylareva", link: "https://drive.google.com/drive/folders/1KRYoPIOIiCa5UrZY3Gk4Fzk7oDdair6S?usp=drive_link" },
+            20: { name: "Ihsan", link: "https://drive.google.com/drive/folders/1USjwU1ZLHO0_flHPkpF7nU2lGGz5SA_c?usp=drive_link" },
+            21: { name: "Virginia", link: "https://drive.google.com/drive/folders/1cVclJgpoERRLF4CYOVeQjDQE6xaanx6f?usp=drive_link" },
+            22: { name: "Hanifah", link: "https://drive.google.com/drive/folders/1jYSi_sA4Au3rwok-WKcJDA9ZKjvCRxx8?usp=drive_link" },
+            23: { name: "Yudhis", link: "https://drive.google.com/drive/folders/1vMpC77ikn6VHyV-kf3QMpgF8R5H2-VQU?usp=drive_link" },
+            24: { name: "Ignalea", link: "https://drive.google.com/drive/folders/1d34iNx9i2dPHRqBMsEhaMZSB5gilfVpt?usp=drive_link" },
+            25: { name: "Faddil", link: "https://drive.google.com/drive/folders/1e-z2suOlyVlJfX1VZzyuXMqXrAVscxIW?usp=drive_link" },
+            26: { name: "Nazila", link: "https://drive.google.com/drive/folders/1P1RjkeTi9KyAS07xamyj74c6HT--GuyD?usp=drive_link" },
+            27: { name: "Vhasqiya", link: "https://drive.google.com/drive/folders/1ec7sV4w_3ic8WfDvUuA5EK_Khot_KPPp?usp=drive_link" },
+            28: { name: "Cheeta", link: "https://drive.google.com/drive/folders/1uZnTa5dmt8YnmwIRFPZk7n64IbtKULf2?usp=drive_link" },
+            29: { name: "Luvena", link: "https://drive.google.com/drive/folders/1CSj5oRI000KjgJBjDYpj-oCAU71-zudD?usp=drive_link" },
+            30: { name: "Afif", link: "https://drive.google.com/drive/folders/1LGxDU6k-4JBj_hPtmwc_Wz-oR7kah4tO?usp=drive_link" },
+            31: { name: "Rihaab", link: "https://drive.google.com/drive/folders/1ld0IX8U8UrPQ16GzYi8DNDuD98zuJtpK?usp=drive_link" },
+            32: { name: "Zaki", link: "https://drive.google.com/drive/folders/1YfN3PEJ1Z_X0z7yPgwiQh6uMaxjcsB9v?usp=drive_link" },
+            33: { name: "Lutfisya", link: "https://drive.google.com/drive/folders/1jasVCW9oSBm9nSdtZPeTtyYrSyXHkJ8Z?usp=drive_link" },
+            34: { name: "Vikar", link: "https://drive.google.com/drive/folders/1KRYoPIOIiCa5UrZY3Gk4Fzk7oDdair6S?usp=drive_link" },
+            35: { name: "Andien", link: "https://drive.google.com/drive/folders/1USjwU1ZLHO0_flHPkpF7nU2lGGz5SA_c?usp=drive_link" },
+            36: { name: "Naura", link: "https://drive.google.com/drive/folders/1cVclJgpoERRLF4CYOVeQjDQE6xaanx6f?usp=drive_link" },
+            37: { name: "Ricky", link: "https://drive.google.com/drive/folders/1jYSi_sA4Au3rwok-WKcJDA9ZKjvCRxx8?usp=drive_link" },
+            38: { name: "Rifky", link: "https://drive.google.com/drive/folders/1vMpC77ikn6VHyV-kf3QMpgF8R5H2-VQU?usp=drive_link" },
+            39: { name: "Iksan", link: "https://drive.google.com/drive/folders/1d34iNx9i2dPHRqBMsEhaMZSB5gilfVpt?usp=drive_link" },
+            40: { name: "Despri", link: "https://drive.google.com/drive/folders/1e-z2suOlyVlJfX1VZzyuXMqXrAVscxIW?usp=drive_link" },
+            41: { name: "Yunita", link: "https://drive.google.com/drive/folders/1P1RjkeTi9KyAS07xamyj74c6HT--GuyD?usp=drive_link" },
+            42: { name: "Hanifah", link: "https://drive.google.com/drive/folders/1ec7sV4w_3ic8WfDvUuA5EK_Khot_KPPp?usp=drive_link" }
+        };
+
+        function validateAndStart() {
+            const inputField = document.getElementById('participant-number');
+            const userNumber = parseInt(inputField.value);
+            
+            // Validasi Input
+            if (!userNumber || !examDatabase[userNumber]) {
+                alert("Nomor urut tidak valid atau belum terdaftar!");
+                inputField.focus();
+                return;
+            }
+
+            const userData = examDatabase[userNumber];
+            startPopupSequence(userData.name, userData.link);
+        }
+
+        function startPopupSequence(name, link) {
+            // Update Text Popup dengan Nama Peserta
+            document.getElementById('popup-title').innerText = `Halo ${name} ✨`;
+            document.getElementById('popup').classList.add('active');
+
+            // Logic Countdown
+            let timeLeft = 5;
+            const countdownEl = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+                timeLeft--;
+                countdownEl.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    window.location.href = link; 
+                }
+            }, 1000);
+        }
+        
+        // Trigger Enter key di input
+        document.getElementById("participant-number").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                validateAndStart();
+            }
+        });
+    </script>
+
+</body>
+</html>
